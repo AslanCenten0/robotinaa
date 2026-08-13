@@ -1,0 +1,18 @@
+{
+  "name": "Traductor LSA - Girls Sign Tech",
+  "short_name": "Traductor LSA",
+  "description": "Traductor de Lengua de Señas Argentina (LSA) client-side con MediaPipe",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#720026",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/robotina.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
