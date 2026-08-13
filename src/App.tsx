@@ -1,10 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CameraTranslator from './components/CameraTranslator';
 import Dictionary from './components/Dictionary';
 import Store from './components/Store';
 
 function App() {
   const [activeTab, setActiveTab] = useState<'inicio' | 'diccionario' | 'tienda'>('inicio');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  useEffect(() => {
+    // Verificar si ya está instalado y ejecutándose en modo standalone
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        (window.navigator as any).standalone === true;
+
+    if (isStandalone) {
+      setIsInstallable(false);
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Evitar que aparezca el banner nativo por defecto en dispositivos móviles
+      e.preventDefault();
+      // Guardar el evento de instalación para dispararlo luego
+      setDeferredPrompt(e);
+      // Mostrar nuestro botón de instalación
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    const handleAppInstalled = () => {
+      // Limpiar el prompt diferido
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+      console.log('La PWA ha sido instalada exitosamente.');
+    };
+
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    
+    // Mostrar el prompt de instalación nativo
+    deferredPrompt.prompt();
+    
+    // Esperar la respuesta del usuario
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`Elección del usuario respecto a la instalación: ${outcome}`);
+    
+    // El prompt solo puede ser usado una vez, lo descartamos
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
 
   return (
     <>
@@ -45,6 +98,11 @@ function App() {
             >
               Tienda
             </button>
+            {isInstallable && (
+              <button className="btn-instalar" onClick={handleInstallClick}>
+                📲 Descargar App
+              </button>
+            )}
           </nav>
         </div>
       </header>

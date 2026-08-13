@@ -867,3 +867,17 @@ footer {
   background-color: var(--rosa-medio);
   border-radius: 50%;
 }
+
+nav button.btn-instalar {
+  background: linear-gradient(135deg, #ffd23f 0%, #ff8c00 100%);
+  color: #1a202c;
+  border-color: #ffd23f;
+  box-shadow: 0 4px 12px rgba(255, 210, 63, 0.3);
+}
+nav button.btn-instalar:hover {
+  background: #ffffff;
+  color: #ff8c00;
+  border-color: #ffffff;
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
