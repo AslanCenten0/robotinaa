@@ -7,6 +7,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<'inicio' | 'diccionario' | 'tienda'>('inicio');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSModal, setShowIOSModal] = useState(false);
 
   useEffect(() => {
     // Verificar si ya está instalado y ejecutándose en modo standalone
@@ -16,7 +18,14 @@ function App() {
     if (isStandalone) {
       setIsInstallable(false);
       return;
+    } else {
+      setIsInstallable(true);
     }
+
+    // Detectar si es un dispositivo iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                        (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+    setIsIOS(isIOSDevice);
 
     const handleBeforeInstallPrompt = (e: Event) => {
       // Evitar que aparezca el banner nativo por defecto en dispositivos móviles
@@ -45,7 +54,16 @@ function App() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (isIOS) {
+      setShowIOSModal(true);
+      return;
+    }
+
+    if (!deferredPrompt) {
+      // Fallback si no hay deferredPrompt listo (ej. no es un contexto seguro HTTPS, u Opera/Chrome antes de disparar el evento)
+      alert("Para instalar esta aplicación, haz clic en el botón de opciones o menú de tu navegador (⋮ o ⋯) y selecciona 'Instalar aplicación' o 'Agregar a la pantalla principal'.");
+      return;
+    }
     
     // Mostrar el prompt de instalación nativo
     deferredPrompt.prompt();
@@ -116,6 +134,27 @@ function App() {
       <footer>
         <p>EET N° 24 "Girls Sign Tech" · Prototipo de Migración SPA/PWA Cliente</p>
       </footer>
+
+      {showIOSModal && (
+        <div className="modal-overlay visible" onClick={() => setShowIOSModal(false)}>
+          <div className="modal-caja" onClick={(e) => e.stopPropagation()}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.8rem' }}>📲</div>
+            <h3 style={{ color: '#ffffff', marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 700 }}>
+              Instalar en tu iPhone / iPad
+            </h3>
+            <p style={{ color: '#a0aec0', fontSize: '0.88rem', lineHeight: '1.6', marginBottom: '1.5rem', textAlign: 'left' }}>
+              Para instalar esta app en tu dispositivo iOS y utilizarla a pantalla completa y sin conexión:
+              <br /><br />
+              1. Presioná el botón de <strong>Compartir</strong> <span style={{fontSize:'1.1rem'}}>⎋</span> (en Safari) o de <strong>Opciones</strong> (en Chrome/Firefox) en la barra de tu navegador.
+              <br /><br />
+              2. Buscá y seleccioná la opción <strong>"Agregar a Inicio"</strong> (Add to Home Screen).
+            </p>
+            <button className="btn-cancelar" onClick={() => setShowIOSModal(false)}>
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
